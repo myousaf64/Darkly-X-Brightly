@@ -10,7 +10,7 @@ The appliance is a VirtualBox x86 OVA; the lab host is Apple Silicon, so we run 
 QEMU (x86_64 emulation) with guest `:4942` forwarded to host `:4942`. See
 `SETUP.md`. Recon: `recon/recon.sh`.
 
-## Flags recovered (6/6 mandatory target: 5 found + 1 in progress)
+## Flags recovered — 6/6 mandatory ✓
 
 | # | Flag | Breach | Vuln class |
 |---|------|--------|-----------|
@@ -19,7 +19,7 @@ QEMU (x86_64 emulation) with guest `:4942` forwarded to host `:4942`. See
 | 3 | `FLAG{md5_1s_4_n4m3pl4t3_n0t_4_l0ck}` | 03 | Weak/leaked JWT secret |
 | 4 | `FLAG{1d0r_ur_pr0f1l3_1s_m1n3}` | 04 | IDOR on user records |
 | 5 | `FLAG{d3fus3dxml_n3xt_spr1nt_pr0m1s3}` | 05 | XXE → SSRF → secret disclosure |
-| 6 | *in progress* | — | PocketBase superuser (creds leaked in breach 05) |
+| 6 | `FLAG{th3_und3rsc0r3_sl4sh_kn0ws_th3_w4y}` | 11 | PocketBase superuser (creds leaked in breach 05) |
 
 ## Privilege-escalation ladder (student → application admin)
 
@@ -59,10 +59,16 @@ J=$(grep session /tmp/ben.jar | awk '{print $NF}')
 ./05-xxe-ssrf-internal-config/exploit.sh http://localhost:4942 "$J"
 ```
 
-## Next steps (flag 6 + bonus)
+## Breach 11 — PocketBase superuser (final admin)
 
-Breach 05 leaked the **PocketBase superuser** credentials
-(`admin@42network.local` / `Darkly42Admin!`) on the internal `:8090` service. Using them
-against PocketBase (which the SSRF shows is reachable) is the path to the application's
-true admin and the remaining flags. That service is not exposed to the host in the
-current port-forward; completing it is the open task.
+The config leaked the PocketBase superuser creds. Authenticating to PocketBase
+(`POST /api/admins/auth-with-password`) yields full DB access; the `internal_audit`
+collection holds **flag 6**. This is the application's true administrator — reached
+purely from a chain of web weaknesses (info disclosure → XXE → SSRF → credential reuse).
+
+## Status
+
+- **Mandatory: complete.** 6/6 flags, 10/10 vulnerabilities documented.
+- **Bonus (4 more flags):** not stored in the database — they require live-exploit
+  triggers (e.g. an admin viewing a stored-XSS payload). Open task; see breaches
+  06/07/08 for the primitives.
