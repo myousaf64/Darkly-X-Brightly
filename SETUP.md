@@ -24,3 +24,10 @@ subject describes, and browse http://localhost:4942.
 
 Note: emulation is CPU-only on Apple Silicon, so the VM boots slowly. To also reach the
 internal PocketBase during testing, add `hostfwd=tcp:127.0.0.1:8090-:8090`.
+
+## How you run the attacks
+
+You attack the website **from your own machine's terminal** (curl / the `exploit.sh`
+scripts) pointed at `http://localhost:4942`. You do **not** SSH into the VM or use a
+terminal inside it — the appliance is sealed and the target is the web app only. The VM
+just runs the site; the port-forwards above make it reachable at `localhost`.

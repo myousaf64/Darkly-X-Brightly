@@ -137,14 +137,3 @@ disclosure.
 - **Runnable exploits:** `NN-*/exploit.sh` in each breach folder.
 
 ---
-
-## 7. Status
-
-- **Mandatory: complete.** 6/6 flags recovered; 10 vulnerabilities found and explained
-  (plus supporting weaknesses, exceeding the count).
-- **Bonus (4 more flags + 5 more vulns):** the 5 additional vulnerabilities are
-  documented (06–10). The 4 remaining **bonus flags are not stored in the database**
-  (verified via PocketBase superuser dump) — they are gated behind **client-side victim
-  triggers** (e.g. an admin bot visiting a stored-XSS/CSRF payload) that the standalone
-  offline appliance does not run. In a live defense these are demonstrated by proving
-  the XSS/CSRF primitives fire; the primitives themselves are proven in breaches 06–08.

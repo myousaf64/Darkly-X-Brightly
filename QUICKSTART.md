@@ -79,15 +79,4 @@ curl -s "$PB/api/collections/internal_audit/records" -H "Authorization: $T" | gr
 
 ---
 
-### All 6 flags
-| # | Flag | Vulnerability |
-|---|------|---------------|
-| 1 | `FLAG{r3s3t_t0k3n_w4s_just_md5_lol}` | Predictable/disclosed reset token |
-| 2 | `FLAG{just_p4tch_y0ur_0wn_r0l3_lol}` | Mass assignment |
-| 3 | `FLAG{md5_1s_4_n4m3pl4t3_n0t_4_l0ck}` | Weak JWT secret |
-| 4 | `FLAG{1d0r_ur_pr0f1l3_1s_m1n3}` | IDOR |
-| 5 | `FLAG{d3fus3dxml_n3xt_spr1nt_pr0m1s3}` | XXE → SSRF |
-| 6 | `FLAG{th3_und3rsc0r3_sl4sh_kn0ws_th3_w4y}` | PocketBase superuser (cred reuse) |
-
-Each breach folder (`01-…`–`11-…`) has a runnable `exploit.sh`. Full narrative with
-real command outputs: `docs/REPRODUCE.md`. Architecture & methodology: `docs/ARCHITECTURE.md`.
+Flag table and narrative: `walkthrough.md`. Full outputs: `docs/REPRODUCE.md`.

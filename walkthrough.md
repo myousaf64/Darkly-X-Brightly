@@ -1,74 +1,49 @@
 # Darkly v2 — Audit Walkthrough
 
-Target: the web application at **http://localhost:4942** (FastAPI + uvicorn, backed by
-an internal PocketBase on `:8090`). All testing is against the provided sealed VM
-appliance only. Scripts are our own (no sqlmap or similar).
+Combined audit of the web app at **http://localhost:4942** (FastAPI + uvicorn, backed by
+an internal PocketBase on `:8090`). Testing is against the provided sealed VM only;
+all scripts are our own (no sqlmap).
 
-## Environment
+## Flags (6/6 mandatory)
 
-The appliance is a VirtualBox x86 OVA; the lab host is Apple Silicon, so we run it under
-QEMU (x86_64 emulation) with guest `:4942` forwarded to host `:4942`. See
-`SETUP.md`. Recon: `recon/recon.sh`.
-
-## Flags recovered — 6/6 mandatory ✓
-
-| # | Flag | Breach | Vuln class |
-|---|------|--------|-----------|
-| 1 | `FLAG{r3s3t_t0k3n_w4s_just_md5_lol}` | 01 / 04 | Predictable+disclosed reset token |
+| # | Flag | Breach | Vulnerability |
+|---|------|--------|---------------|
+| 1 | `FLAG{r3s3t_t0k3n_w4s_just_md5_lol}` | 01 | Predictable + disclosed reset token |
 | 2 | `FLAG{just_p4tch_y0ur_0wn_r0l3_lol}` | 02 | Mass assignment (privesc) |
-| 3 | `FLAG{md5_1s_4_n4m3pl4t3_n0t_4_l0ck}` | 03 | Weak/leaked JWT secret |
+| 3 | `FLAG{md5_1s_4_n4m3pl4t3_n0t_4_l0ck}` | 03 | Weak / leaked JWT secret |
 | 4 | `FLAG{1d0r_ur_pr0f1l3_1s_m1n3}` | 04 | IDOR on user records |
 | 5 | `FLAG{d3fus3dxml_n3xt_spr1nt_pr0m1s3}` | 05 | XXE → SSRF → secret disclosure |
-| 6 | `FLAG{th3_und3rsc0r3_sl4sh_kn0ws_th3_w4y}` | 11 | PocketBase superuser (creds leaked in breach 05) |
+| 6 | `FLAG{th3_und3rsc0r3_sl4sh_kn0ws_th3_w4y}` | 11 | PocketBase superuser (cred reuse) |
 
-## Privilege-escalation ladder (student → application admin)
+## The chain (how one bug feeds the next)
 
-1. **Foothold** (breach 01): reset token is `md5(email)` and disclosed in the redirect →
-   take over the student `benjamin@student.42.tech`, log in → session JWT with
-   `role:student`.
-2. **student → cadet** (breach 02): `PATCH /api/profile {"role":"cadet"}` (mass
-   assignment). Re-login → cadet JWT → `/staff/dashboard` → **flag 2**.
-3. **→ god/admin** (breach 03): the JWT secret `42network` is leaked in the forum. The
-   cadet step is capped server-side, so we forge a JWT for the real god account
-   **sophie** (her id comes from the IDOR). `/admin` → **flag 3**.
-4. Each level reached corresponds to a flag, as the subject requires.
+```
+anonymous ──reset token = md5(email)──▶ student ──PATCH role=cadet──▶ cadet
+   ──forge JWT (secret "42network") as god──▶ /admin
+   ──IDOR + XXE/SSRF leak creds──▶ PocketBase superuser
+```
+
+Each step unlocks the next; flags 1–5 are pure `:4942`, flag 6 reuses creds that the
+`:4942` SSRF leaks to reach the internal PocketBase.
+
+## Where to look
+
+- **Run it fast:** `QUICKSTART.md`
+- **Every step with real command output:** `docs/REPRODUCE.md`
+- **How the app is built + methodology + per-vuln fixes:** `docs/ARCHITECTURE.md`
+- **Each breach:** folders `01-…`–`11-…` (`exploit.sh` + `explanation.md` + `flag`)
+- **Setup / how to run:** `SETUP.md`
 
 ## The 10 vulnerabilities
 
-Flag-bearing: **01** predictable/disclosed reset token · **02** mass assignment ·
-**03** weak JWT secret · **04** IDOR · **05** XXE→SSRF.
-Additional: **06** stored XSS (forum) · **07** reflected XSS (newsletter) ·
-**08** open redirect · **09** information disclosure (debug headers/comments/robots) ·
-**10** unsalted-MD5 password hints + weak passwords.
-
-Each folder has `exploit.sh` (reproduces it), `explanation.md` (how/impact/fix) and a
-`flag` file where one is yielded. Supporting weaknesses also observed: user enumeration
-and excessive data exposure via `/api/users`, non-HttpOnly session cookie (amplifies 06
-and 07), and `/admin` trusting the JWT `sub` for lookup.
-
-## How to reproduce (quick)
-
-```bash
-# 1. foothold
-./01-predictable-reset-token/exploit.sh
-J=$(grep session /tmp/ben.jar | awk '{print $NF}')
-# 2..5
-./02-mass-assignment-privesc/exploit.sh http://localhost:4942 "$J"
-./03-weak-jwt-secret/exploit.sh
-./04-idor-user-records/exploit.sh http://localhost:4942 "$J"
-./05-xxe-ssrf-internal-config/exploit.sh http://localhost:4942 "$J"
-```
-
-## Breach 11 — PocketBase superuser (final admin)
-
-The config leaked the PocketBase superuser creds. Authenticating to PocketBase
-(`POST /api/admins/auth-with-password`) yields full DB access; the `internal_audit`
-collection holds **flag 6**. This is the application's true administrator — reached
-purely from a chain of web weaknesses (info disclosure → XXE → SSRF → credential reuse).
+Flag-bearing: 01 reset token · 02 mass assignment · 03 weak JWT secret · 04 IDOR ·
+05 XXE→SSRF (· 11 PocketBase cred reuse). Additional: 06 stored XSS · 07 reflected XSS ·
+08 open redirect · 09 information disclosure · 10 unsalted-md5 password hints.
+Details and fixes per folder and in `docs/ARCHITECTURE.md`.
 
 ## Status
 
-- **Mandatory: complete.** 6/6 flags, 10/10 vulnerabilities documented.
-- **Bonus (4 more flags):** not stored in the database — they require live-exploit
-  triggers (e.g. an admin viewing a stored-XSS payload). Open task; see breaches
-  06/07/08 for the primitives.
+Mandatory complete (6 flags, 10 vulns). Bonus: the 5 extra vulns are documented (06–10);
+the 4 bonus flags are not in the datastore (confirmed via PocketBase superuser dump) —
+they require a live victim/admin-bot to trigger XSS/CSRF, which the offline appliance
+does not run.
