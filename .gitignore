@@ -1,0 +1,9 @@
+# Never commit VM images or any binaries (subject rule)
+*.ova
+*.vmdk
+*.qcow2
+*.utm/
+*.iso
+# downloaded target files stay out of the repo
+loot/
+*.bin
