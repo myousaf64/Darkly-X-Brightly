@@ -1,4 +1,4 @@
-# Breach 02 — Mass assignment (self privilege escalation)
+# Breach 02 - Mass assignment (self privilege escalation)
 
 **Class:** Broken access control / mass assignment
 **Flag:** `FLAG{just_p4tch_y0ur_0wn_r0l3_lol}` (on `/staff/dashboard`, cadet-gated)

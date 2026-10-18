@@ -1,4 +1,4 @@
-# Breach 08 — Open redirect
+# Breach 08 - Open redirect
 
 **Class:** Unvalidated redirect / forward
 **Flag:** none (vulnerability to explain)

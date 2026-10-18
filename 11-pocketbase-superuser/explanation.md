@@ -1,4 +1,4 @@
-# Breach 11 — PocketBase superuser takeover (credential chain)
+# Breach 11 - PocketBase superuser takeover (credential chain)
 
 **Class:** Broken access control / credential disclosure chain
 **Flag:** `FLAG{th3_und3rsc0r3_sl4sh_kn0ws_th3_w4y}`

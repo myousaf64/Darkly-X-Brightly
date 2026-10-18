@@ -1,4 +1,4 @@
-# Breach 07 — Reflected XSS (newsletter email parameter)
+# Breach 07 - Reflected XSS (newsletter email parameter)
 
 **Class:** Reflected Cross-Site Scripting
 **Flag:** none (vulnerability to explain)

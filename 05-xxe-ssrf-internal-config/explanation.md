@@ -1,4 +1,4 @@
-# Breach 05 — XXE leading to SSRF and secret disclosure
+# Breach 05 - XXE leading to SSRF and secret disclosure
 
 **Class:** XML External Entity (XXE) + Server-Side Request Forgery (SSRF)
 **Flag:** `FLAG{d3fus3dxml_n3xt_spr1nt_pr0m1s3}`
@@ -23,7 +23,7 @@ the reflected title. It leaks:
 
 - `darkly_flag` → the flag,
 - `jwt_secret: 42network` (confirms breach 03),
-- `pb_admin_email` / `pb_admin_password` (PocketBase superuser creds — see NEXT-STEPS).
+- `pb_admin_email` / `pb_admin_password` (PocketBase superuser creds - see NEXT-STEPS).
 
 The same primitive reaches the internal PocketBase on `:8090` (its `/api/health`
 responds), i.e. a general SSRF into the internal network.

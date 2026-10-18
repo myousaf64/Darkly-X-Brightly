@@ -1,4 +1,4 @@
-# Darkly v2 — Audit Walkthrough
+# Darkly v2 - Audit Walkthrough
 
 Combined audit of the web app at **http://localhost:4942** (FastAPI + uvicorn, backed by
 an internal PocketBase on `:8090`). Testing is against the provided sealed VM only;
@@ -44,6 +44,6 @@ Details and fixes per folder and in `docs/ARCHITECTURE.md`.
 ## Status
 
 Mandatory complete (6 flags, 10 vulns). Bonus: the 5 extra vulns are documented (06–10);
-the 4 bonus flags are not in the datastore (confirmed via PocketBase superuser dump) —
+the 4 bonus flags are not in the datastore (confirmed via PocketBase superuser dump) -
 they require a live victim/admin-bot to trigger XSS/CSRF, which the offline appliance
 does not run.

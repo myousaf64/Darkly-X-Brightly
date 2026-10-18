@@ -1,4 +1,4 @@
-# Breach 06 — Stored XSS (forum post body)
+# Breach 06 - Stored XSS (forum post body)
 
 **Class:** Stored Cross-Site Scripting
 **Flag:** none (vulnerability to explain)
@@ -11,7 +11,7 @@
 curl -b "session=$J" -X POST http://localhost:4942/forum/new \
   --data-urlencode 'title=t' \
   --data-urlencode 'content=x<script>alert(document.cookie)</script>'
-# then open the returned /forum/<id> — the <script> is present unescaped
+# then open the returned /forum/<id> - the <script> is present unescaped
 ```
 
 Because the session cookie is **not HttpOnly** (confirmed on `/staff`:

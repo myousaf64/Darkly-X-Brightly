@@ -1,4 +1,4 @@
-# Breach 09 — Information disclosure (debug headers, comments, verbose errors)
+# Breach 09 - Information disclosure (debug headers, comments, verbose errors)
 
 **Class:** Security misconfiguration / sensitive data exposure
 **Flag:** none (vulnerability to explain)
@@ -18,7 +18,7 @@ The app leaks internals on every response and in page source:
 
 ## Impact
 Hands an attacker the tech stack, internal service locations and a roadmap of weak
-points — accelerating every other attack in this report.
+points - accelerating every other attack in this report.
 
 ## Remediation
 Strip `x-powered-by`/custom debug headers in production, remove revealing comments,

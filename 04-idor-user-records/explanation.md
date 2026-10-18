@@ -1,4 +1,4 @@
-# Breach 04 — IDOR on user records
+# Breach 04 - IDOR on user records
 
 **Class:** Broken object-level authorization (IDOR) / excessive data exposure
 **Flags:** `FLAG{r3s3t_t0k3n_w4s_just_md5_lol}`, `FLAG{1d0r_ur_pr0f1l3_1s_m1n3}`
@@ -14,7 +14,7 @@ with **no ownership check**. The record over-exposes sensitive fields:
   `e99a18c4…` = `md5("abc123")`.
 
 User ids are enumerable from `/api/users` (the list endpoint itself over-discloses the
-whole user table — emails, roles — enabling user enumeration).
+whole user table - emails, roles - enabling user enumeration).
 
 ## Impact
 Reads any user's private data, password hashes and recovery material; combined with

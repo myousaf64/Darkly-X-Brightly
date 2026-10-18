@@ -1,4 +1,4 @@
-# Breach 10 — Unsalted MD5 password hints + weak passwords
+# Breach 10 - Unsalted MD5 password hints + weak passwords
 
 **Class:** Cryptographic failure / broken authentication
 **Flag:** none (vulnerability to explain)

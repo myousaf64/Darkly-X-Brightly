@@ -1,4 +1,4 @@
-# Darkly v2 — Architecture & Methodology (detailed guide)
+# Darkly v2 - Architecture & Methodology (detailed guide)
 
 A deep explanation of the target, the full attack surface, the exploitation chain, and
 every vulnerability with impact and remediation. Pair this with `docs/REPRODUCE.md`
@@ -46,7 +46,7 @@ Browser ──HTTP:4942──> FastAPI (uvicorn)  ──HTTP:8090──> PocketB
 | `/reset-password/confirm` | POST | none | sets password (students only) |
 | `/api/profile` | PATCH | user | **mass assignment** (role up to cadet) |
 | `/api/users` | GET | user | lists all users (**enumeration**) |
-| `/api/users/<id>` | GET | user | **IDOR** — any full record |
+| `/api/users/<id>` | GET | user | **IDOR** - any full record |
 | `/staff/dashboard` | GET | cadet+ | Flag 2 |
 | `/admin` | GET | god (by `sub`→DB) | Flag 3 |
 | `/agenda/import` | POST | user | **XXE → SSRF** (XML, defusedxml off) |
@@ -63,20 +63,20 @@ Disallowed-but-telling `robots.txt`: `/admin /staff /internal /backup /api/grade
 
 ## 3. Methodology (how the audit proceeded)
 
-1. **Passive recon** — read every page's HTML (comments), `robots.txt`, `sitemap.xml`,
+1. **Passive recon** - read every page's HTML (comments), `robots.txt`, `sitemap.xml`,
    and response headers. Darkly v2 narrates its own bugs; the forum deploy log is the
    single richest source (jwt secret, defusedxml, upload whitelist, reset weakness).
    Script: `recon/recon.sh`.
-2. **Foothold** — no self-registration exists, so abuse the **reset flow** (token =
+2. **Foothold** - no self-registration exists, so abuse the **reset flow** (token =
    md5(email), handed back directly) to take over a student → valid session JWT.
-3. **Vertical escalation** — `PATCH /api/profile` (**mass assignment**) lifts
+3. **Vertical escalation** - `PATCH /api/profile` (**mass assignment**) lifts
    student→cadet (Flag 2). The server caps higher roles, so pivot to the **leaked JWT
    secret** and forge the god account for `/admin` (Flag 3).
-4. **Horizontal/data access** — **IDOR** on `/api/users/<id>` dumps every record,
+4. **Horizontal/data access** - **IDOR** on `/api/users/<id>` dumps every record,
    yielding two flags and all password hints (Flag 4).
-5. **Server-side** — **XXE→SSRF** via `/agenda/import` bypasses the loopback gate on
+5. **Server-side** - **XXE→SSRF** via `/agenda/import` bypasses the loopback gate on
    `/internal/config`, leaking secrets incl. PocketBase admin creds (Flag 5).
-6. **Full compromise** — reuse those creds against the internal **PocketBase superuser**
+6. **Full compromise** - reuse those creds against the internal **PocketBase superuser**
    API and read the audit collection (Flag 6).
 
 Each step feeds the next; the chain is the point.
@@ -114,11 +114,11 @@ Full write-ups live per breach in `NN-*/explanation.md`; summary with impact + f
 | 03 | Weak/leaked JWT signing secret | session cookie | ✓ | long random secret in a vault; rotate |
 | 04 | IDOR + excessive data exposure + user enumeration | `/api/users[/id]` | ✓ | object-level authz; minimal serializer |
 | 05 | XXE → SSRF → secret disclosure | `/agenda/import` → `/internal/config` | ✓ | defusedxml; authz on `/internal/*`; no secrets in config endpoint |
-| 06 | Stored XSS (post content rendered raw) | `/forum/new` → `/forum/<id>` | — | output-encode; CSP; HttpOnly cookie |
-| 07 | Reflected XSS (`email` query param) | `/newsletter` | — | encode reflected params; CSP |
-| 08 | Open redirect (any URL/scheme, incl. `javascript:`) | `/redirect?next=` | — | relative-only / host allow-list |
-| 09 | Information disclosure (debug headers, comments, verbose errors) | global | — | strip headers/comments; generic errors |
-| 10 | Unsalted-md5 password hints + weak passwords | `users.pw_hint` | — | argon2/bcrypt; drop `pw_hint` |
+| 06 | Stored XSS (post content rendered raw) | `/forum/new` → `/forum/<id>` | - | output-encode; CSP; HttpOnly cookie |
+| 07 | Reflected XSS (`email` query param) | `/newsletter` | - | encode reflected params; CSP |
+| 08 | Open redirect (any URL/scheme, incl. `javascript:`) | `/redirect?next=` | - | relative-only / host allow-list |
+| 09 | Information disclosure (debug headers, comments, verbose errors) | global | - | strip headers/comments; generic errors |
+| 10 | Unsalted-md5 password hints + weak passwords | `users.pw_hint` | - | argon2/bcrypt; drop `pw_hint` |
 | 11 | PocketBase superuser via credential reuse | `:8090` | ✓ | isolate admin API; rotate creds |
 
 **Supporting weaknesses** (count toward the "19 vulnerabilities"): session cookie not
